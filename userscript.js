@@ -1,62 +1,65 @@
 // ==UserScript==
-// @name         Neopets - Shapeshifter Script Maker
-// @match        http://www.neopets.com/medieval/shapeshifter.phtml*
+// @name         Neopets - Shapeshifter Solver
+// @match        https://www.neopets.com/medieval/shapeshifter.phtml*
+// @version      1.1
+// @description  Script to solve Neopets Shapeshifter puzzles
 // ==/UserScript==
 
-function getDeltas() {
-    var pieces = {};
-    var items = $("table[border=1][bordercolor='gray']").find("img[name='i_']:not(:last)").get();
-    items.splice(0, 0, items.pop());
-    $(items).each(function(k,v) {
-        pieces[$(v).attr("src").substr(0,52)] = k; // use substr up to 52 just in case mouseover is triggered
-    });
-    return pieces;
-}
-
-var deltas = getDeltas();
-
-function tableScripter(table) {
-    var lines = [];
-    table.find("tr").each(function(k,v) {
-        var line = '';
-        $(v).find("td").each(function(k1,v1) {
-            line += $(v1).find("img").length;
+(function() {
+    function getDeltas() {
+        var pieces = {};
+        var items = $("table[border=1][bordercolor='gray']").find("img[name='i_']:not(:last)").get();
+        items.splice(0, 0, items.pop()); // Move the last item to the front
+        $(items).each(function(index, element) {
+            pieces[$(element).attr("src").slice(0, 52)] = index; // Use slice for safety
         });
-        lines.push(line);
-    });
-    return "'" + lines.join() + "'";
-}
-
-function getShapes() {
-    var shapes = [];
-    $($("big")[1]).parent().parent().find("table[cellpadding='0']").each(function(k1,v1) {
-        shapes.push(tableScripter($(v1)));
-    });
-    if(!shapes.length) {
-        return null;
+        return pieces;
     }
-    return "pieces = [" + shapes.join(", ") + "]";
-}
 
-function getBoard() {
-    var lines = [];
-    $("table[align=center][cellpadding=0][cellspacing=0][border=0]").find("tr").each(function(k,v) {
-        var line = '';
-        $(v).find("img").each(function(k1,v1) {
-            line += deltas[$(v1).attr("src").substr(0,52)];
+    var deltas = getDeltas();
+
+    function tableScripter(table) {
+        var lines = [];
+        table.find("tr").each(function(index, row) {
+            var line = '';
+            $(row).find("td").each(function(colIndex, cell) {
+                line += $(cell).find("img").length;
+            });
+            lines.push(line);
         });
-        lines.push(line);
+        return "'" + lines.join() + "'";
+    }
+
+    function getShapes() {
+        var shapes = [];
+        $($("big")[1]).parent().parent().find("table[cellpadding='0']").each(function(index, shapeTable) {
+            shapes.push(tableScripter($(shapeTable)));
+        });
+        return shapes.length ? "pieces = [" + shapes.join(", ") + "]" : ""; // Handle no shapes
+    }
+
+    function getBoard() {
+        var lines = [];
+        $("table[align=center][cellpadding=0][cellspacing=0][border=0]").find("tr").each(function(index, row) {
+            var line = '';
+            $(row).find("img").each(function(imgIndex, img) {
+                line += deltas[$(img).attr("src").slice(0, 52)] || ''; // Handle missing delta
+            });
+            lines.push(line);
+        });
+        return "board = Board('" + lines.join() + "', " + (Object.keys(deltas).length - 1) + ")";
+    }
+
+    // Click event to copy code to clipboard
+    $(document).on("click", "#copy", function() {
+        var $temp = $("<textarea>");
+        $("body").append($temp);
+        $temp.val(getBoard() + "\n" + getShapes()).select();
+        document.execCommand("copy");
+        $temp.remove();
+        $("#copy").fadeOut();
     });
-    return "board = Board('" + lines.join() + "', " + (Object.keys(deltas).length - 1) + ")";
-}
 
-$("#copy").live( "click", function() {
-    var $temp = $("<textarea>");
-    $("body").append($temp);
-    $temp.val(getBoard() +"\n" + getShapes()).select();
-    document.execCommand("copy");
-    $temp.remove();
-    $("#copy").fadeOut();
-});
-
-$("table[border=1][bordercolor='gray']").after("<p><center><button id='copy'>Copy Board Code</button></center>");
+    // Add copy button after the target table
+    $("table[border=1][bordercolor='gray']").after("<p><center><button id='copy'>Copy Board Code</button></center>");
+})();
