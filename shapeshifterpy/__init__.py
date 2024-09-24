@@ -20,7 +20,7 @@ class Board:
         self.depth = depth
         self.rows = len(self.row_specs)
         self.columns = len(self.row_specs[0])
-        self.cells = [int(o) for o in spec if o is not ',']
+        self.cells = [int(o) for o in spec if o != ',']  # Changed to !=
 
     def apply(self, piece, column, row, delta):
         for cell in piece.cells:
