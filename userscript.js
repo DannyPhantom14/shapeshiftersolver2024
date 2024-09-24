@@ -45,7 +45,7 @@
         $("table[align=center][cellpadding=0][cellspacing=0][border=0]").find("tr").each(function(index, row) {
             var line = '';
             $(row).find("img").each(function(imgIndex, img) {
-                line += deltas[$(img).attr("src").slice(0, 52)] || ''; // Handle missing delta
+                line += deltas[$(img).attr("src").slice(0, 52)] || '0'; // Return 0 if delta doesn't exist
             });
             lines.push(line);
         });
