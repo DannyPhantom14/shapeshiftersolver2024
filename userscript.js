@@ -1,9 +1,11 @@
 // ==UserScript==
-// @name         Neopets - Shapeshifter Solver
+// @name         Neopets - Shapeshifter Script Maker
 // @match        https://www.neopets.com/medieval/shapeshifter.phtml*
 // @version      1.1
-// @description  Script to solve Neopets Shapeshifter puzzles
+// @description  Script to generate Neopets Shapeshifter scripts
+// @namespace https://github.com/DannyPhantom14/shapeshiftersolver2024
 // ==/UserScript==
+/* globals jQuery, $, waitForKeyElements */
 
 (function() {
     function getDeltas() {
